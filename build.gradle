@@ -1,47 +1,74 @@
-plugins {
-	id 'fabric-loom' version '0.2.2-SNAPSHOT'
-	id 'maven-publish'
+buildscript {
+	repositories {
+		maven { url = 'https://files.minecraftforge.net/maven' }
+		jcenter()
+		mavenCentral()
+	}
+	dependencies {
+		classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+	}
 }
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'maven-publish'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+version = '${mod_version}'
+group = 'abused_master.refinedmachinery'
+archivesBaseName = 'refinedmachinery'
 
-group = "abused_master.refinedmachinery"
-archivesBaseName = "RefinedMachinery"
-version = "${mod_version}"
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
 minecraft {
+	mappings channel: 'snapshot', version: '20180921-1.13'
+	// accessTransformer = file('build/resources/main/META-INF/accesstransformer.cfg')
+
+	runs {
+		client {
+			workingDirectory project.file('run')
+			property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+			property 'forge.logging.console.level', 'debug'
+
+			mods {
+				refinedmachinery {
+					source sourceSets.main
+				}
+			}
+		}
+
+		server {
+			workingDirectory project.file('run')
+			property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+			property 'forge.logging.console.level', 'debug'
+
+			mods {
+				refinedmachinery {
+					source sourceSets.main
+				}
+			}
+		}
+	}
 }
 
 repositories {
-	jcenter()
-    maven { url = "https://jitpack.io/" }
-	maven { url = "https://oss.sonatype.org/content/repositories/releases/" }
 	maven { url = "http://maven.abusedmaster.xyz/" }
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${mc_version}"
-	mappings "net.fabricmc:yarn:${yarn_mappings}"
-	modCompile "net.fabricmc:fabric-loader:${loader_version}"
-	modCompile "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-
-	modCompile "abused_master.abusedlib:AbusedLib:${abusedlib_version}"
-	modCompile "com.github.NerdHubMC:Cardinal-Energy:${cardinal_version}"
-	modCompile "com.github.NerdHubMC:Cardinal-Components-API:${cardinal_components}"
-	include "com.github.NerdHubMC:Cardinal-Components-API:${cardinal_components}"
-	compileOnly "com.google.code.findbugs:jsr305:${findbugs_version}"
+	minecraft 'net.minecraftforge:forge:1.13.2-25.0.215'
+	//compile "abused_master.abusedlib:AbusedLib:${abusedlib_version}"
 }
 
 jar {
-	from "LICENSE.md"
-	manifest.mainAttributes(
-			"Implementation-Title": project.name,
-			"Implementation-Version": project.version,
-			"Maven-Artifact": "${project.group}:${project.archivesBaseName}:${project.version}".toLowerCase(Locale.ROOT),
-			"Built-On-Minecraft": "${mc_version}",
-			"Built-On-Java": "${System.getProperty("java.vm.version")} (${System.getProperty("java.vm.vendor")})"
-	)
+	manifest {
+		attributes([
+				"Specification-Title": "Refined Machinery",
+				"Specification-Vendor": "abused_master",
+				"Specification-Version": "1",
+				"Implementation-Title": project.name,
+				"Implementation-Version": "${version}",
+				"Implementation-Vendor" :"abused_master",
+				"Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+		])
+	}
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
